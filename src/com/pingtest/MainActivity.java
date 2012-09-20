@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
 				Runtime run = Runtime.getRuntime();
 				Process proc = null;
 				try {
-					String str = "ping -c 5 -i 0.2 -W 1 10.0.0.1";
+					String str = "ping -c 5 -i 0.2 -W 1 www.baidu.com";
 					System.out.println(str);
 					proc = run.exec(str);
 					InputStreamReader ir = new InputStreamReader(proc
