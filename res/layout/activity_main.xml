@@ -5,11 +5,58 @@
 
     <TextView
         android:id="@+id/start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:text="@string/hello_world"
         tools:context=".MainActivity" />
+    
+    <TextView
+        android:id="@+id/gsmDbm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="@string/hello_world"
+        tools:context=".MainActivity" />
+    
+    <TextView
+        android:id="@+id/gsmAsu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/gsmDbm"
+        android:layout_centerHorizontal="true"
+        android:text="@string/hello_world"
+        tools:context=".MainActivity" />
+    
+    <TextView
+        android:id="@+id/latitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/gsmAsu"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="@string/hello_world"
+        tools:context=".MainActivity" />
+    
+    <TextView
+        android:id="@+id/longitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/latitude"
+        android:layout_centerHorizontal="true"
+        android:text="@string/hello_world"
+        tools:context=".MainActivity" />
+    
+    <TextView
+        android:id="@+id/ping"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:text="@string/hello_world"
+        tools:context=".MainActivity" />
+    
+    
 
 </RelativeLayout>
