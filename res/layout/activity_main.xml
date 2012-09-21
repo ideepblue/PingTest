@@ -5,15 +5,18 @@
 
     <TextView
         android:id="@+id/start"
-        android:layout_width="100dp"
-        android:layout_height="30dp"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:text="@string/hello_world"
+        android:background="@android:color/background_dark"
+        android:text="Ping!!"
+        android:gravity="center"
+        android:textColor="@android:color/white"
         tools:context=".MainActivity" />
     
     <TextView
-        android:id="@+id/gsmDbm"
+        android:id="@+id/signalStrengths"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
@@ -21,29 +24,50 @@
         tools:context=".MainActivity" />
     
     <TextView
-        android:id="@+id/gsmAsu"
+        android:id="@+id/phoneType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/gsmDbm"
         android:layout_centerHorizontal="true"
+        android:layout_below="@id/signalStrengths"
+        android:layout_marginTop="5dp"
+        android:text="phonetype"
+        tools:context=".MainActivity" />
+    
+    <TextView
+        android:id="@+id/networkType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/phoneType"
+        android:layout_marginTop="5dp"
+        android:text="networktype"
+        tools:context=".MainActivity" />
+    
+    <TextView
+        android:id="@+id/dataActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/networkType"
+        android:layout_marginTop="5dp"
+        android:text="dataActivity"
+        tools:context=".MainActivity" />
+    
+    <TextView
+        android:id="@+id/locationStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/dataActivity"
+        android:layout_marginTop="5dp"
         android:text="@string/hello_world"
         tools:context=".MainActivity" />
     
     <TextView
-        android:id="@+id/latitude"
+        android:id="@+id/gps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/gsmAsu"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:text="@string/hello_world"
-        tools:context=".MainActivity" />
-    
-    <TextView
-        android:id="@+id/longitude"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/latitude"
+        android:layout_below="@id/locationStatus"
         android:layout_centerHorizontal="true"
         android:text="@string/hello_world"
         tools:context=".MainActivity" />
