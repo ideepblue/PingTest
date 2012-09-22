@@ -2,6 +2,15 @@
 
     <string name="app_name">PingTest</string>
     <string name="hello_world">Hello world!</string>
+    <string name="signal_strengths">信号强度：</string>
+    <string name="phone_type">电话类型：</string>
+    <string name="service_state">服务状态：</string>
+    <string name="network_type">网络类型：</string>
+    <string name="data_state">数据状态：</string>
+    <string name="data_activity">数据活动：</string>
+    <string name="gps_status">GPS状态：</string>
+    <string name="agps_status">AGPS状态：</string>
+    <string name="ping">ping!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
 
