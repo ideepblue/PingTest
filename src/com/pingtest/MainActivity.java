@@ -1,8 +1,6 @@
 package com.pingtest;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 
@@ -22,13 +20,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
@@ -40,11 +44,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	private TextView textViewStart;
+	private TextView textViewEnd;
 	private TextView textViewSignalStrengths;
 	private TextView textViewPhoneType;
 	private TextView textViewServiceState;
@@ -57,16 +61,20 @@ public class MainActivity extends Activity {
 	private TextView textViewCell;
 	private TextView textViewGoogleLocation;
 	private TextView textViewPing;
+	private TextView textViewPause;
+	private AlarmManager alarmManager;
 	private LocationManager locationManager;
 	private LocationListener locationListener;
 	private TelephonyManager telephonyManager;
 	private PhoneStateListener phoneStateListener;
+	private PingRecevier pingReceiver;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		initAction();
 		initUI();
 		initPhoneListener();
 		initLocationListener();
@@ -74,10 +82,22 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onPause() {
-		super.onPause();
 		telephonyManager.listen(phoneStateListener,
 				PhoneStateListener.LISTEN_NONE);
-		locationManager.removeUpdates(locationListener);
+		// locationManager.removeUpdates(locationListener);
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(System.currentTimeMillis());
+		textViewPause.setText(calendar.getTime().getHours() + ":"
+				+ calendar.getTime().getMinutes() + ":"
+				+ calendar.getTime().getSeconds());
+
+		// Intent intent = new Intent(PingtestActions.ACTION_PING);
+		// PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+		// intent, 0);
+		// alarmManager.cancel(pendingIntent);
+
+		super.onPause();
 	}
 
 	@Override
@@ -90,75 +110,105 @@ public class MainActivity extends Activity {
 						| PhoneStateListener.LISTEN_DATA_ACTIVITY
 						| PhoneStateListener.LISTEN_CELL_LOCATION
 						| PhoneStateListener.LISTEN_SERVICE_STATE);
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				3000, 10, locationListener);
-		locationManager.requestLocationUpdates(
-				LocationManager.NETWORK_PROVIDER, 3000, 10, locationListener);
+		// locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+		// 3000, 10, locationListener);
+		// locationManager.requestLocationUpdates(
+		// LocationManager.NETWORK_PROVIDER, 3000, 10, locationListener);
+
+		// Intent intent = new Intent(PingtestActions.ACTION_PING);
+		// PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+		// intent, 0);
+		// alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+		// SystemClock.elapsedRealtime(), 6*1000, pendingIntent);
+	}
+
+	private void initAction() {
+		pingReceiver = new PingRecevier();
+
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(PingtestActions.ACTION_PING);
+		intentFilter.addAction(PingtestActions.ACTION_AGPS_UPDATE);
+		intentFilter.addAction(PingtestActions.ACTION_GPS_UPDATE);
+		this.registerReceiver(pingReceiver, intentFilter);
+
+		alarmManager = (AlarmManager) this
+				.getSystemService(Context.ALARM_SERVICE);
+		Intent intent = new Intent(PingtestActions.ACTION_PING);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+				intent, 0);
+		alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+				SystemClock.elapsedRealtime(), 60 * 1000, pendingIntent);
 	}
 
 	private void initUI() {
 		textViewStart = (TextView) findViewById(R.id.start);
+		textViewStart.setText("START Loc");
 		textViewStart.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				new AsyncTask<Void, Void, Void>() {
-					String strResult;
-					int result;
+				Intent intent = new Intent(PingtestActions.ACTION_AGPS_UPDATE);
+				PendingIntent pendingIntent = PendingIntent.getBroadcast(
+						MainActivity.this, 0, intent, 0);
+				locationManager.requestLocationUpdates(
+						LocationManager.NETWORK_PROVIDER, 3000, 10,
+						pendingIntent);
+				intent = new Intent(PingtestActions.ACTION_GPS_UPDATE);
+				pendingIntent = PendingIntent.getBroadcast(MainActivity.this,
+						0, intent, 0);
+				locationManager.requestLocationUpdates(
+						LocationManager.GPS_PROVIDER, 3000, 10, pendingIntent);
+				/*
+				 * new AsyncTask<Void, Void, Void>() { String strResult; int
+				 * result;
+				 * 
+				 * @Override protected Void doInBackground(Void... params) {
+				 * Runtime run = Runtime.getRuntime(); Process proc = null; try
+				 * { String str = "ping -c 10 -i 0.2 -W 1 www.baidu.com";
+				 * System.out.println(str); proc = run.exec(str);
+				 * InputStreamReader ir = new InputStreamReader(proc
+				 * .getInputStream()); LineNumberReader input = new
+				 * LineNumberReader(ir); String line; strResult = new String();
+				 * 
+				 * boolean startRecord = false; while ((line = input.readLine())
+				 * != null) { Log.v("AA", line); if (startRecord) { strResult +=
+				 * line + "\n"; } if (line.startsWith("---")) { startRecord =
+				 * true; } }
+				 * 
+				 * result = proc.waitFor(); } catch (IOException e) {
+				 * e.printStackTrace(); } catch (InterruptedException e) {
+				 * e.printStackTrace(); } finally { // proc.destroy(); } return
+				 * null; }
+				 * 
+				 * @Override protected void onPostExecute(Void params) { if
+				 * (result == 0) { Toast.makeText(MainActivity.this, "ping连接成功",
+				 * Toast.LENGTH_SHORT).show(); Log.v("AA", "ok");
+				 * 
+				 * } else { Toast.makeText(MainActivity.this, "ping测试失败",
+				 * Toast.LENGTH_SHORT).show(); Log.v("AA", "failed"); }
+				 * textViewPing.setText(strResult);
+				 * 
+				 * }
+				 * 
+				 * }.execute();
+				 */
+			}
+		});
 
-					@Override
-					protected Void doInBackground(Void... params) {
-						Runtime run = Runtime.getRuntime();
-						Process proc = null;
-						try {
-							String str = "ping -c 30 -i 0.2 -W 1 www.baidu.com";
-							System.out.println(str);
-							proc = run.exec(str);
-							InputStreamReader ir = new InputStreamReader(proc
-									.getInputStream());
-							LineNumberReader input = new LineNumberReader(ir);
-							String line;
-							strResult = new String();
-
-							boolean startRecord = false;
-							while ((line = input.readLine()) != null) {
-								Log.v("AA", line);
-								if (startRecord) {
-									strResult += line + "\n";
-								}
-								if (line.startsWith("---")) {
-									startRecord = true;
-								}
-							}
-
-							result = proc.waitFor();
-						} catch (IOException e) {
-							e.printStackTrace();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						} finally {
-							// proc.destroy();
-						}
-						return null;
-					}
-
-					@Override
-					protected void onPostExecute(Void params) {
-						if (result == 0) {
-							Toast.makeText(MainActivity.this, "ping连接成功",
-									Toast.LENGTH_SHORT).show();
-							Log.v("AA", "ok");
-
-						} else {
-							Toast.makeText(MainActivity.this, "ping测试失败",
-									Toast.LENGTH_SHORT).show();
-							Log.v("AA", "failed");
-						}
-						textViewPing.setText(strResult);
-
-					}
-
-				}.execute();
-
+		textViewEnd = (TextView) findViewById(R.id.end);
+		textViewEnd.setText("END Loc");
+		textViewEnd.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(PingtestActions.ACTION_AGPS_UPDATE);
+				PendingIntent pendingIntent = PendingIntent.getBroadcast(
+						MainActivity.this, 0, intent, 0);
+				locationManager.removeUpdates(
+						pendingIntent);
+				intent = new Intent(PingtestActions.ACTION_GPS_UPDATE);
+				pendingIntent = PendingIntent.getBroadcast(MainActivity.this,
+						0, intent, 0);
+				locationManager.removeUpdates(
+						pendingIntent);
 			}
 		});
 
@@ -174,6 +224,7 @@ public class MainActivity extends Activity {
 		textViewAgps = (TextView) findViewById(R.id.agps);
 		textViewCell = (TextView) findViewById(R.id.cell);
 		textViewPing = (TextView) findViewById(R.id.ping);
+		textViewPause = (TextView) findViewById(R.id.pause);
 	}
 
 	@Override
@@ -216,7 +267,7 @@ public class MainActivity extends Activity {
 							+ ", GsmDbm = "
 							+ (signalStrength.getGsmSignalStrength() * 2 - 113);
 				} else {
-					str += "CdmaDbm = " + signalStrength.getCdmaDbm()
+					str += "\nCdmaDbm = " + signalStrength.getCdmaDbm()
 							+ ", EvdoDbm = " + signalStrength.getEvdoDbm();
 				}
 				textViewSignalStrengths.setText(MainActivity.this
@@ -491,30 +542,35 @@ public class MainActivity extends Activity {
 
 		};
 
-		Location location = locationManager
-				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		// 第一次获得设备的位置
-		if (location != null) {
-			Log.v("AA",
-					"l1 = " + location.getLatitude() + ", L = "
-							+ location.getLongitude());
-			locationListener.onLocationChanged(location);
-
-		}
-		location = locationManager
-				.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-		// 第一次获得设备的位置
-		if (location != null) {
-			Log.v("AA",
-					"l1 = " + location.getLatitude() + ", L = "
-							+ location.getLongitude());
-			locationListener.onLocationChanged(location);
-		}
+		/*
+		 * Location location = locationManager
+		 * .getLastKnownLocation(LocationManager.GPS_PROVIDER); // 第一次获得设备的位置 if
+		 * (location != null) { Log.v("AA", "l1 = " + location.getLatitude() +
+		 * ", L = " + location.getLongitude());
+		 * locationListener.onLocationChanged(location);
+		 * 
+		 * } location = locationManager
+		 * .getLastKnownLocation(LocationManager.NETWORK_PROVIDER); //
+		 * 第一次获得设备的位置 if (location != null) { Log.v("AA", "l1 = " +
+		 * location.getLatitude() + ", L = " + location.getLongitude());
+		 * locationListener.onLocationChanged(location); }
+		 */
 		// 重要函数，监听数据测试
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				3000, 10, locationListener);
+		/*
+		 * locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+		 * 3000, 10, locationListener); locationManager.requestLocationUpdates(
+		 * LocationManager.NETWORK_PROVIDER, 3000, 10, locationListener);
+		 */
+
+		Intent intent = new Intent(PingtestActions.ACTION_AGPS_UPDATE);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+				intent, 0);
 		locationManager.requestLocationUpdates(
-				LocationManager.NETWORK_PROVIDER, 3000, 10, locationListener);
+				LocationManager.NETWORK_PROVIDER, 3000, 10, pendingIntent);
+		intent = new Intent(PingtestActions.ACTION_GPS_UPDATE);
+		pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				3000, 10, pendingIntent);
 	}
 
 	private class GoogleLocationAsyncTask extends
@@ -639,5 +695,46 @@ public class MainActivity extends Activity {
 				textViewGoogleLocation.setText("code = " + code);
 			}
 		}
+	}
+
+	private class PingRecevier extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTimeInMillis(System.currentTimeMillis());
+			if (intent.getAction().equals(PingtestActions.ACTION_PING)) {
+
+				textViewPause.setText("TIME" + calendar.getTime().getHours()
+						+ ":" + calendar.getTime().getMinutes() + ":"
+						+ calendar.getTime().getSeconds());
+
+			} else if (intent.getAction().equals(
+					PingtestActions.ACTION_AGPS_UPDATE)) {
+				textViewPause.setText("AGPS_UPDATE"
+						+ calendar.getTime().getHours() + ":"
+						+ calendar.getTime().getMinutes() + ":"
+						+ calendar.getTime().getSeconds());
+				Location location = locationManager
+						.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				// 第一次获得设备的位置
+				if (location != null) {
+					locationListener.onLocationChanged(location);
+				}
+			} else if (intent.getAction().equals(
+					PingtestActions.ACTION_GPS_UPDATE)) {
+				textViewPause.setText("GPS_UPDATE"
+						+ calendar.getTime().getHours() + ":"
+						+ calendar.getTime().getMinutes() + ":"
+						+ calendar.getTime().getSeconds());
+				Location location = locationManager
+						.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+				// 第一次获得设备的位置
+				if (location != null) {
+					locationListener.onLocationChanged(location);
+				}
+			}
+		}
+
 	}
 }
