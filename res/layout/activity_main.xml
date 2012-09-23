@@ -4,29 +4,29 @@
     android:layout_height="fill_parent" >
 
     <TextView
-        android:id="@+id/signalStrengths"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:text="@string/signal_strengths"
-        tools:context=".MainActivity" />
-
-    <TextView
         android:id="@+id/phoneType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/signalStrengths"
-        android:layout_marginTop="5dp"
         android:text="@string/phone_type"
         tools:context=".MainActivity" />
-    
+
+    <TextView
+        android:id="@+id/signalStrengths"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/phoneType"
+        android:layout_marginTop="5dp"
+        android:text="@string/signal_strengths"
+        tools:context=".MainActivity" />
+
     <TextView
         android:id="@+id/serviceState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/phoneType"
+        android:layout_below="@id/signalStrengths"
         android:layout_marginTop="5dp"
         android:text="@string/service_state"
         tools:context=".MainActivity" />
@@ -42,42 +42,13 @@
         tools:context=".MainActivity" />
 
     <TextView
-        android:id="@+id/dataActivity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@id/networkType"
-        android:layout_marginTop="5dp"
-        android:text="@string/data_activity"
-        tools:context=".MainActivity" />
-
-    <TextView
-        android:id="@+id/gpsStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@id/dataActivity"
-        android:layout_marginTop="5dp"
-        android:text="@string/gps_status"
-        tools:context=".MainActivity" />
-
-    <TextView
         android:id="@+id/gps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/gpsStatus"
-        android:text="@string/hello_world"
-        tools:context=".MainActivity" />
-
-    <TextView
-        android:id="@+id/agpsStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@id/gps"
+        android:layout_below="@id/networkType"
         android:layout_marginTop="10dp"
-        android:text="@string/agps_status"
+        android:text="@string/hello_world"
         tools:context=".MainActivity" />
 
     <TextView
@@ -85,16 +56,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/agpsStatus"
-        android:text="@string/hello_world"
-        tools:context=".MainActivity" />
-
-    <TextView
-        android:id="@+id/cell"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@id/gpsStatus"
+        android:layout_below="@id/gps"
         android:text="@string/hello_world"
         tools:context=".MainActivity" />
 
@@ -103,18 +65,20 @@
         android:layout_width="80dp"
         android:layout_height="50dp"
         android:layout_alignParentRight="true"
-        android:layout_below="@id/cell"
+        android:layout_alignTop="@id/gps"
         android:background="@android:color/background_dark"
         android:gravity="center"
         android:text="@string/ping"
         android:textColor="@android:color/white"
         tools:context=".MainActivity" />
+
     <TextView
         android:id="@+id/end"
         android:layout_width="80dp"
         android:layout_height="50dp"
         android:layout_alignParentRight="true"
         android:layout_below="@id/start"
+        android:layout_marginTop="10dp"
         android:background="@android:color/background_dark"
         android:gravity="center"
         android:text="@string/ping"
@@ -131,24 +95,13 @@
         tools:context=".MainActivity" />
 
     <TextView
-        android:id="@+id/googleLocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/ping"
-        android:layout_alignParentLeft="true"
-        android:layout_marginBottom="5dp"
-        android:text="@string/hello_world"
-        tools:context=".MainActivity" />
-    
-    <TextView
         android:id="@+id/pause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/ping"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/end"
+        android:layout_marginTop="10dp"
         android:text="@string/hello_world"
         tools:context=".MainActivity" />
-    
 
 </RelativeLayout>
