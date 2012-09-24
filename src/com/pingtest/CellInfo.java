@@ -1,73 +1,68 @@
 package com.pingtest;
 
-public class CellInfo {
+import org.json.JSONException;
+import org.json.JSONObject;
 
-	// 通常固定值
-	public String phoneType;
-	public String deviceId;
-	public String line1Number;
-	public String networkOperator;
-	public String simSerialNumber;
+public class CellInfo extends JSONObject {
+	public static String OK = "ok";
+	public static String FAILED = "failed";
 	
-	// 变化值
-	public String dataState;
-	public String networkType;
-	public String serviceState;
-	public int signalStrengthsGSM;
-	public int signalStrengthsCDMA;
-	public int signalStrengthsEVDO;
-	public long gpsTimestamp;
-	public String gpsLatitude;
-	public String gpsLongitude;
-	String gpsAccuracy;
-	long agpsTimestamp;
-	public String agpsLatitude;
-	public String agpsLongitude;
-	public String agpsAccuracy;
+	public long id;
 	public CellInfo() {
 		super();
-		this.phoneType = "bad";
-		this.deviceId = "bad";
-		this.line1Number = "bad";
-		this.networkOperator = "bad";
-		this.simSerialNumber = "bad";
-		this.dataState = "bad";
-		this.networkType = "bad";
-		this.serviceState = "bad";
-		this.signalStrengthsGSM = -2;
-		this.signalStrengthsCDMA = -2;
-		this.signalStrengthsEVDO = -2;
-		this.gpsTimestamp = 0;
-		this.gpsLatitude = "bad";
-		this.gpsLongitude = "bad";
-		this.gpsAccuracy = "bad";
-		this.agpsTimestamp = 0;
-		this.agpsLatitude = "bad";
-		this.agpsLongitude = "bad";
-		this.agpsAccuracy = "bad";
+		
+		this.id = 0;
+		
+		try {
+			// 通常固定值
+			this.put("phoneType", "bad");
+			this.put("deviceId", "bad");
+			this.put("line1Number", "bad");
+			this.put("networkOperator", "bad");
+			this.put("simSerialNumber", "bad");
+			// 变化值
+			this.put("dataState", "bad");
+			this.put("networkType", "bad");
+			this.put("serviceState", "bad");
+			this.put("signalStrengthsGSM", -2);
+			this.put("signalStrengthsCDMA", -2);
+			this.put("signalStrengthsEVDO", -2);
+			this.put("gpsTimestamp", 0);
+			this.put("gpsLatitude", "bad");
+			this.put("gpsLongitude", "bad");
+			this.put("gpsAccuracy", "bad");
+			this.put("agpsTimestamp", 0);
+			this.put("agpsLatitude", "bad");
+			this.put("agpsLongitude", "bad");
+			this.put("agpsAccuracy", "bad");
+			//PING
+			this.put("result", "bad");
+			this.put("timestamp", 0);
+			this.put("packetsTransmitted", "bad");
+			this.put("packetsReceived", "bad");
+			this.put("packetLoss", "bad");
+			this.put("pingTime", "bad");
+			this.put("min", "bad");
+			this.put("max", "bad");
+			this.put("avg", "bad");
+			this.put("mdev", "bad");
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public CellInfo lock() {
-		CellInfo lock = new CellInfo();
-		lock.phoneType = phoneType;
-		lock.deviceId = deviceId;
-		lock.line1Number = line1Number;
-		lock.networkOperator = networkOperator;
-		lock.simSerialNumber = simSerialNumber;
-		lock.dataState = dataState;
-		lock.networkType = networkType;
-		lock.serviceState = serviceState;
-		lock.signalStrengthsGSM = signalStrengthsGSM;
-		lock.signalStrengthsCDMA = signalStrengthsCDMA;
-		lock.signalStrengthsEVDO = signalStrengthsEVDO;
-		lock.gpsTimestamp = gpsTimestamp;
-		lock.gpsLatitude = gpsLatitude;
-		lock.gpsLongitude = gpsLongitude;
-		lock.gpsAccuracy = gpsAccuracy;
-		lock.agpsTimestamp = agpsTimestamp;
-		lock.agpsLatitude = agpsLatitude;
-		lock.agpsLongitude = agpsLongitude;
-		lock.agpsAccuracy = agpsAccuracy;
-		return lock;
+		CellInfo cell;
+		try {
+			cell = new CellInfo(this.toString());
+		} catch (JSONException e) {
+			e.printStackTrace();
+			cell = new CellInfo();
+		}
+		return cell;
+	}
+	
+	public CellInfo(String content) throws JSONException {
+		super(content);
 	}
 }

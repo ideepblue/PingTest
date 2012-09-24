@@ -6,15 +6,15 @@
     <uses-sdk
         android:minSdkVersion="7"
         android:targetSdkVersion="15" />
-    
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_LOGS" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> 
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:icon="@drawable/ic_launcher"
@@ -25,9 +25,28 @@
             android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".PingService"
+            android:enabled="true" >
+        </service>
+        
+        <receiver android:name=".PingReceiver" android:enabled="true">
+            <intent-filter>
+                <action android:name="com.pingtest.action.START_UPLOAD" />
+                <action android:name="com.pingtest.action.STOP_UPLOAD" />
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name=".DatabaseProvider"
+            android:authorities="com.pingtest"
+            android:multiprocess="true" >
+        </provider>
     </application>
 
 </manifest>

@@ -1,13 +1,11 @@
 package com.pingtest;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.text.DecimalFormat;
 import java.util.Calendar;
+import java.util.List;
 
 import android.app.Activity;
-import android.app.AlarmManager;
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,9 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
@@ -25,6 +21,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -39,7 +36,7 @@ public class MainActivity extends Activity {
 	private TextView textViewPing;
 	private TextView textViewPause;
 
-	private AlarmManager alarmManager;
+//	private AlarmManager alarmManager;
 	private LocationManager locationManager;
 	private TelephonyManager telephonyManager;
 
@@ -47,15 +44,16 @@ public class MainActivity extends Activity {
 
 	private PingRecevier pingReceiver;
 
-	private CellInfo cellInfo;
-	private PingInfo pingInfo;
+//	private CellInfo cellInfo;
 
-	private int pingCount;
+	private DatabaseOperator dbo;
 
-	private static int TIME_REPEAT_PING = 60 * 1000;
+	private int pingHistroyCount;
+
+//	private static int TIME_REPEAT_PING = 60 * 1000;
 	private static int LOCATION_UPDATE_MIN_TIME = 5 * 1000;
 	private static int LOCATION_UPDATE_MIN_DISTANCE = 10;
-	private static String SERVER_ADDRESS = "www.baidu.com";
+//	private static String SERVER_ADDRESS = "jia.bit.edu.cn";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -71,23 +69,52 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onPause() {
+		MainActivity.this.stop();
 		super.onPause();
 	}
 
 	@Override
 	protected void onResume() {
+		// Service Running Check
+		ActivityManager activityManager = (ActivityManager) this
+				.getSystemService(ACTIVITY_SERVICE);
+
+		List<ActivityManager.RunningServiceInfo> serviceList = activityManager
+				.getRunningServices(Integer.MAX_VALUE);
+
+		boolean isRunning = false;
+		for (int i = 0; i < serviceList.size(); i++) {
+			if (serviceList.get(i).service.getClassName().equals(
+					"com.pingtest.PingService") == true) {
+				textViewPing.setText(this.getString(R.string.service_running));
+				textViewPing.setTextColor(this.getResources().getColor(R.color.text_blue));
+				isRunning = true;
+			}
+		}
+		if (!isRunning) {
+			textViewPing.setText(this.getString(R.string.service_stopped));
+			textViewPing.setTextColor(this.getResources().getColor(R.color.text_red));
+		}
+
+		// PingHistoryCount
+		pingHistroyCount = dbo.queryCount();
+		Log.v("PingHistoryCount", pingHistroyCount + "");
+		
+		// START
+		MainActivity.this.start();
 		super.onResume();
 	}
 
 	@Override
 	protected void onDestroy() {
-		MainActivity.this.stop();
+		// MainActivity.this.stop();
+		this.unregisterReceiver(pingReceiver);
 		super.onDestroy();
 	}
 
 	private void initManager() {
-		alarmManager = (AlarmManager) this
-				.getSystemService(Context.ALARM_SERVICE);
+//		alarmManager = (AlarmManager) this
+//				.getSystemService(Context.ALARM_SERVICE);
 		telephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		locationManager = (LocationManager) this
@@ -114,18 +141,10 @@ public class MainActivity extends Activity {
 				if (signalStrength.isGsm()) {
 					str += "GsmDbm = "
 							+ (signalStrength.getGsmSignalStrength() * 2 - 113);
-					// SET
-					cellInfo.signalStrengthsGSM = signalStrength
-							.getGsmSignalStrength() * 2 - 113;
-					cellInfo.signalStrengthsCDMA = -1;
-					cellInfo.signalStrengthsEVDO = -1;
+
 				} else {
 					str += "CdmaDbm = " + signalStrength.getCdmaDbm()
 							+ ", EvdoDbm = " + signalStrength.getEvdoDbm();
-					// SET
-					cellInfo.signalStrengthsGSM = -1;
-					cellInfo.signalStrengthsCDMA = signalStrength.getCdmaDbm();
-					cellInfo.signalStrengthsEVDO = signalStrength.getEvdoDbm();
 				}
 				textViewSignalStrengths.setText(MainActivity.this
 						.getString(R.string.signal_strengths) + str);
@@ -152,8 +171,6 @@ public class MainActivity extends Activity {
 					r = "DATA_SUSPENDED";
 					break;
 				}
-				// SET
-				cellInfo.dataState = r;
 				str += r + "\n"
 						+ MainActivity.this.getString(R.string.network_type);
 				switch (networkType) {
@@ -212,8 +229,6 @@ public class MainActivity extends Activity {
 					break;
 				}
 				str += r;
-				// SET
-				cellInfo.networkType = r;
 				textViewNetworkType.setText(str);
 			}
 
@@ -239,8 +254,6 @@ public class MainActivity extends Activity {
 					break;
 				}
 				str += r;
-				// SET
-				cellInfo.serviceState = r;
 				textViewServiceState.setText(str);
 			}
 		};
@@ -252,7 +265,14 @@ public class MainActivity extends Activity {
 		textViewStart.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				MainActivity.this.start();
+				Toast.makeText(MainActivity.this, "START PINGTEST",
+						Toast.LENGTH_SHORT).show();
+				MainActivity.this.startService(new Intent(MainActivity.this,
+						PingService.class));
+				textViewPing.setText(MainActivity.this
+						.getString(R.string.service_running));
+				textViewPing.setTextColor(MainActivity.this.getResources().getColor(R.color.text_blue));
+				// MainActivity.this.start();
 			}
 		});
 
@@ -261,7 +281,14 @@ public class MainActivity extends Activity {
 		textViewEnd.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				MainActivity.this.stop();
+				Toast.makeText(MainActivity.this, "STOP PINGTEST",
+						Toast.LENGTH_SHORT).show();
+				MainActivity.this.stopService(new Intent(MainActivity.this,
+						PingService.class));
+				textViewPing.setText(MainActivity.this
+						.getString(R.string.service_stopped));
+				textViewPing.setTextColor(MainActivity.this.getResources().getColor(R.color.text_red));
+				// MainActivity.this.stop();
 			}
 		});
 
@@ -276,9 +303,8 @@ public class MainActivity extends Activity {
 	}
 
 	private void initData() {
-		pingCount = 0;
-		cellInfo = new CellInfo();
-		pingInfo = new PingInfo();
+		dbo = new DatabaseOperator(this);
+		pingHistroyCount = 0;
 
 		String str = new String();
 
@@ -299,25 +325,20 @@ public class MainActivity extends Activity {
 		}
 		textViewPhoneType.setText(MainActivity.this
 				.getString(R.string.phone_type) + str);
-		// SET
-		cellInfo.phoneType = str;
-		cellInfo.deviceId = telephonyManager.getDeviceId();
-		cellInfo.line1Number = telephonyManager.getLine1Number();
-		cellInfo.simSerialNumber = telephonyManager.getSimSerialNumber();
-		cellInfo.networkOperator = telephonyManager.getNetworkOperator();
-
 	}
 
 	private void start() {
+
 		Intent intent;
 		PendingIntent pendingIntent;
 
 		// 开启 Ping 定时器
-		intent = new Intent(PingtestActions.ACTION_PING);
-		pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
-				intent, 0);
-		alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-				SystemClock.elapsedRealtime() + 2000, TIME_REPEAT_PING, pendingIntent);
+//		intent = new Intent(PingtestActions.ACTION_PING);
+//		pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
+//				intent, 0);
+//		alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+//				SystemClock.elapsedRealtime() + 2000, TIME_REPEAT_PING,
+//				pendingIntent);
 
 		// 打开AGPS监听
 		intent = new Intent(PingtestActions.ACTION_AGPS_UPDATE);
@@ -343,14 +364,16 @@ public class MainActivity extends Activity {
 	}
 
 	private void stop() {
+
 		Intent intent;
 		PendingIntent pendingIntent;
 
 		// 关闭 Ping 定时器
-		intent = new Intent(PingtestActions.ACTION_PING);
-		pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
-				intent, 0);
-		alarmManager.cancel(pendingIntent);
+		
+//		intent = new Intent(PingtestActions.ACTION_PING);
+//		pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
+//				intent, 0);
+//		alarmManager.cancel(pendingIntent);
 
 		// 关闭AGPS监听
 		intent = new Intent(PingtestActions.ACTION_AGPS_UPDATE);
@@ -369,119 +392,105 @@ public class MainActivity extends Activity {
 				PhoneStateListener.LISTEN_NONE);
 	}
 
-	private class PingAsyncTask extends AsyncTask<Void, Void, Void> {
-
-		String strResult;
-		int result;
-		CellInfo cellInfoLock;
-		PingInfo pingInfoLock;
-
-		protected void onPreExecute() {
-			cellInfoLock = cellInfo.lock();
-			pingInfo.timestamp = System.currentTimeMillis();
-		}
-
-		protected Void doInBackground(Void... params) {
-
-			Runtime run = Runtime.getRuntime();
-			Process proc = null;
-			try {
-				String str = "ping -c 10 -i 1 -W 1 " + SERVER_ADDRESS;
-				System.out.println(str);
-				proc = run.exec(str);
-				InputStreamReader ir = new InputStreamReader(
-						proc.getInputStream());
-				LineNumberReader input = new LineNumberReader(ir);
-				String line;
-				strResult = new String();
-
-				boolean startRecord = false;
-				while ((line = input.readLine()) != null) {
-					if (startRecord) {
-						strResult += line + "\n";
-					}
-					if (line.startsWith("---")) {
-						startRecord = true;
-					}
-				}
-
-				result = proc.waitFor();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} finally { // proc.destroy();
-
-			}
-			return null;
-		}
-
-		protected void onPostExecute(Void params) {
-			if (result == 0) {
-				// 10 packets transmitted, 10 received, 0% packet loss, time
-				// 9008ms
-				// rtt min/avg/max/mdev = 49.082/58.336/63.711/4.395 ms
-
-				Log.v("Ping", "ok");
-				Log.v("Ping", strResult);
-
-				pingInfo.result = "ok";
-
-				String[] lines = strResult.split("\n");
-				String[] line1 = lines[0].split(", ");
-				pingInfo.packetsTransmitted = line1[0].split(" ")[0];
-				pingInfo.packetsReceived = line1[1].split(" ")[0];
-				pingInfo.packetLoss = line1[2].split(" ")[0];
-				pingInfo.pingTime = line1[3].split(" ")[1];
-
-				String[] line2 = lines[1].substring(23, lines[1].length() - 2)
-						.split("/");
-
-				pingInfo.min = line2[0];
-				pingInfo.avg = line2[1];
-				pingInfo.max = line2[2];
-				pingInfo.mdev = line2[3];
-
-			} else {
-				Log.v("Ping", "failed");
-				pingInfo.result = "failed";
-			}
-			textViewPing.setText(strResult);
-			
-			pingInfoLock = pingInfo.lock();
-
-			Log.i("R", pingInfoLock.avg);
-			Log.i("R", pingInfoLock.max);
-			Log.i("R", pingInfoLock.mdev);
-			Log.i("R", pingInfoLock.min);
-			Log.i("R", pingInfoLock.packetLoss);
-			Log.i("R", pingInfoLock.packetsReceived);
-			Log.i("R", pingInfoLock.packetsTransmitted);
-			Log.i("R", pingInfoLock.pingTime);
-			Log.i("R", pingInfoLock.result);
-			Log.i("R", pingInfoLock.timestamp + "");
-			
-			Log.i("R", cellInfoLock.phoneType);
-			Log.i("R", cellInfoLock.deviceId);
-			Log.i("R", cellInfoLock.line1Number);
-			Log.i("R", cellInfoLock.networkOperator);
-			Log.i("R", cellInfoLock.simSerialNumber);
-			Log.i("R", cellInfoLock.dataState);
-			Log.i("R", cellInfoLock.networkType);
-			Log.i("R", cellInfoLock.serviceState);
-			Log.i("R", cellInfoLock.signalStrengthsGSM+"");
-			Log.i("R", cellInfoLock.signalStrengthsCDMA+"");
-			Log.i("R", cellInfoLock.signalStrengthsEVDO+"");
-			Log.i("R", cellInfoLock.gpsTimestamp+"");
-			Log.i("R", cellInfoLock.gpsLatitude);
-			Log.i("R", cellInfoLock.gpsLongitude);
-			Log.i("R", cellInfoLock.gpsAccuracy);
-			Log.i("R", cellInfoLock.agpsTimestamp+"");
-			Log.i("R", cellInfoLock.agpsLatitude);
-			Log.i("R", cellInfoLock.agpsLongitude);
-			Log.i("R", cellInfoLock.agpsAccuracy);
-		}
-	}
+//	private class PingAsyncTask extends AsyncTask<Void, Void, Void> {
+//
+//		String strResult;
+//		int result;
+//		String cellInfoLock;
+//		String pingInfoLock;
+//
+//		protected void onPreExecute() {
+//			cellInfoLock = cellInfo.toString();
+//			try {
+//				cellInfo.put("timestamp", System.currentTimeMillis());
+//			} catch (JSONException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//
+//		protected Void doInBackground(Void... params) {
+//
+//			Runtime run = Runtime.getRuntime();
+//			Process proc = null;
+//			try {
+//				String str = "ping -c 10 -i 1 -W 1 " + SERVER_ADDRESS;
+//				System.out.println(str);
+//				proc = run.exec(str);
+//				InputStreamReader ir = new InputStreamReader(
+//						proc.getInputStream());
+//				LineNumberReader input = new LineNumberReader(ir);
+//				String line;
+//				strResult = new String();
+//
+//				boolean startRecord = false;
+//				while ((line = input.readLine()) != null) {
+//					if (startRecord) {
+//						strResult += line + "\n";
+//					}
+//					if (line.startsWith("---")) {
+//						startRecord = true;
+//					}
+//				}
+//
+//				result = proc.waitFor();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			} finally { // proc.destroy();
+//
+//			}
+//			return null;
+//		}
+//
+//		protected void onPostExecute(Void params) {
+//			try {
+//				if (result == 0) {
+//					// 10 packets transmitted, 10 received, 0% packet loss, time
+//					// 9008ms
+//					// rtt min/avg/max/mdev = 49.082/58.336/63.711/4.395 ms
+//
+//					Log.v("Ping", "ok");
+//					Log.v("Ping", strResult);
+//
+//					cellInfo.put("result", "ok");
+//
+//					String[] lines = strResult.split("\n");
+//					String[] line1 = lines[0].split(", ");
+//					cellInfo.put("packetsTransmitted", line1[0].split(" ")[0]);
+//					cellInfo.put("packetsReceived", line1[1].split(" ")[0]);
+//					cellInfo.put("packetLoss", line1[2].split(" ")[0]);
+//					cellInfo.put("pingTime", line1[3].split(" ")[1]);
+//
+//					String[] line2 = lines[1].substring(23,
+//							lines[1].length() - 2).split("/");
+//
+//					cellInfo.put("min", line2[0]);
+//					cellInfo.put("avg", line2[1]);
+//					cellInfo.put("max", line2[2]);
+//					cellInfo.put("mdev", line2[3]);
+//
+//				} else {
+//					Log.v("Ping", "failed");
+//					cellInfo.put("result", "failed");
+//				}
+//
+//				textViewPing.setText(strResult);
+//
+//				Iterator iterator = cellInfo.keys();
+//				while (iterator.hasNext()) {
+//					String key = (String) iterator.next();
+//
+//					Log.i("R", key + " = " + cellInfo.getString(key));
+//				}
+//				Log.i("R", cellInfoLock);
+//
+//			} catch (JSONException e) {
+//				e.printStackTrace();
+//			}
+//
+//		}
+//	}
 
 	private class PingRecevier extends BroadcastReceiver {
 
@@ -494,30 +503,17 @@ public class MainActivity extends Activity {
 			if (intent.getAction().equals(PingtestActions.ACTION_PING)) {
 
 				Log.v("Receiver", "Ping");
-				pingCount++;
-				textViewPause.setText("TIME\n" + calendar.getTime().getHours()
-						+ ":" + calendar.getTime().getMinutes() + ":"
-						+ calendar.getTime().getSeconds() + "\nPingCount = "
-						+ pingCount);
-
-				Location location;
-
-				location = locationManager
-						.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-				cellInfo.agpsTimestamp = location.getTime();
-				cellInfo.agpsLatitude = df7.format(location.getLatitude());
-				cellInfo.agpsLongitude = df7.format(location.getLongitude());
-				cellInfo.agpsAccuracy = df0.format(location.getAccuracy());
-
-				location = locationManager
-						.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-				cellInfo.gpsTimestamp = location.getTime();
-				cellInfo.gpsLatitude = df7.format(location.getLatitude());
-				cellInfo.gpsLongitude = df7.format(location.getLongitude());
-				cellInfo.gpsAccuracy = df0.format(location.getAccuracy());
-
-				PingAsyncTask task = new PingAsyncTask();
-				task.execute();
+				pingHistroyCount++;
+				textViewPause.setText("TIME\n"
+						+ (calendar.getTime().getYear() + 1900) + "-"
+						+ (calendar.getTime().getMonth() + 1) + "-"
+						+ calendar.getTime().getDate() + " "
+						+ calendar.getTime().getHours() + ":"
+						+ calendar.getTime().getMinutes() + ":"
+						+ calendar.getTime().getSeconds()
+						+ "\nPingHistoryCount = " + pingHistroyCount);
+				// PingAsyncTask task = new PingAsyncTask();
+				// task.execute();
 
 			} else if (intent.getAction().equals(
 					PingtestActions.ACTION_AGPS_UPDATE)) {
@@ -529,9 +525,15 @@ public class MainActivity extends Activity {
 				if (location != null) {
 					calendar.setTimeInMillis(location.getTime());
 					textViewAgps.setText("AGPS" + "\nLatitude = "
-							+ df7.format(location.getLatitude()) + "\nLongitude = "
-							+ df7.format(location.getLongitude()) + "\nAccuracy = "
-							+ df0.format(location.getAccuracy()) + "\nTime = "
+							+ df7.format(location.getLatitude())
+							+ "\nLongitude = "
+							+ df7.format(location.getLongitude())
+							+ "\nAccuracy = "
+							+ df0.format(location.getAccuracy())
+							+ "\nT "
+							+ (calendar.getTime().getYear() + 1900) + "-"
+							+ (calendar.getTime().getMonth() + 1) + "-"
+							+ calendar.getTime().getDate() + " "
 							+ calendar.getTime().getHours() + ":"
 							+ calendar.getTime().getMinutes() + ":"
 							+ calendar.getTime().getSeconds());
@@ -546,9 +548,15 @@ public class MainActivity extends Activity {
 				if (location != null) {
 					calendar.setTimeInMillis(location.getTime());
 					textViewGps.setText("GPS" + "\nLatitude = "
-							+ df7.format(location.getLatitude()) + "\nLongitude = "
-							+ df7.format(location.getLongitude()) + "\nAccuracy = "
-							+ df0.format(location.getAccuracy()) + "\nTime = "
+							+ df7.format(location.getLatitude())
+							+ "\nLongitude = "
+							+ df7.format(location.getLongitude())
+							+ "\nAccuracy = "
+							+ df0.format(location.getAccuracy())
+							+ "\nT "
+							+ (calendar.getTime().getYear() + 1900) + "-"
+							+ (calendar.getTime().getMonth() + 1) + "-"
+							+ calendar.getTime().getDate() + " "
 							+ calendar.getTime().getHours() + ":"
 							+ calendar.getTime().getMinutes() + ":"
 							+ calendar.getTime().getSeconds());

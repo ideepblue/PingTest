@@ -12,5 +12,10 @@
     <string name="agps_status">AGPS状态：</string>
     <string name="ping">ping!</string>
     <string name="title_activity_main">PingTest</string>
+    <string name="service_running">Service Running</string>
+    <string name="service_stopped">Service Stopped</string>
+    <string name="enable_gps">PingTest：请在设置中打开“GPS卫星定位”</string>
+    <string name="enable_agps">PingTest：请在设置中打开“基于网络的位置服务”</string>
+    <string name="enable_all_gps">PingTest：请在设置中打开“GPS卫星定位”和“基于网络的位置服务”</string>
     
 </resources>
