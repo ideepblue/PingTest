@@ -1,6 +1,8 @@
 package com.pingtest;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import org.json.JSONException;
 
@@ -89,17 +91,17 @@ public class DatabaseOperator {
 
 		}
 	}
-	
+
 	public int queryUnuploadCount() {
 		Cursor cur;
 		String whereClause = PingtestColumns.STATUS + " = ?";
-		String[] whereArgs = new String[]{ CellInfo.FAILED };
+		String[] whereArgs = new String[] { CellInfo.FAILED };
 
 		cur = resolver.query(
 				Uri.parse(DatabaseProvider.CONTENT_URI
 						+ PingtestColumns.TABLE_NAME), null, whereClause,
 				whereArgs, null);
-		
+
 		cur.moveToLast();
 
 		int result = cur.getPosition() + 1;
@@ -107,47 +109,52 @@ public class DatabaseOperator {
 
 		return result;
 	}
-	
-	public CellInfo queryUnupload() {
+
+	public List<CellInfo> queryUnupload() {
 		Cursor cur;
 		String whereClause = PingtestColumns.STATUS + " = ?";
-		String[] whereArgs = new String[]{ CellInfo.FAILED };
+		String[] whereArgs = new String[] { CellInfo.FAILED };
 
 		cur = resolver.query(
 				Uri.parse(DatabaseProvider.CONTENT_URI
 						+ PingtestColumns.TABLE_NAME), null, whereClause,
 				whereArgs, null);
-		cur.moveToFirst();
 
-		CellInfo result;
-		try {
-			result = new CellInfo(cur.getString(cur.getColumnIndex(PingtestColumns.DATA)));
-			result.id = cur.getLong(cur.getColumnIndex(PingtestColumns._ID));
-		} catch (JSONException e) {
-			e.printStackTrace();
-			result = new CellInfo();
+		List<CellInfo> result = new ArrayList<CellInfo>();
+
+		while (cur.moveToNext()) {
+			try {
+				CellInfo value = new CellInfo(cur.getString(cur
+						.getColumnIndex(PingtestColumns.DATA)));
+				value.id = cur.getLong(cur.getColumnIndex(PingtestColumns._ID));
+				result.add(value);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 		cur.close();
 
 		return result;
 	}
-	
-	public int updateUnuloadToOk(long id) {
-		
+
+	public int updateUnuloadToOk(List<Long> ids) {
+
 		values = new ContentValues();
 
 		values.put(PingtestColumns.STATUS, CellInfo.OK);
 
-		String whereClause = PingtestColumns._ID + " = ?";
-		String[] whereArgs = new String[]{ Long.toString(id) };
+		String whereClause = null;
+		String[] whereArgs = null;
 
-		int affected = resolver.update(
-				Uri.parse(DatabaseProvider.CONTENT_URI + PingtestColumns.TABLE_NAME), 
-				values, 
-				whereClause,
-				whereArgs
-				);
+		for (int i = 0; i < ids.size(); i++) {
+			whereClause = PingtestColumns._ID + " = ?";
+			whereArgs = new String[] { Long.toString(ids.get(i)) };
+			resolver.update(
+					Uri.parse(DatabaseProvider.CONTENT_URI
+							+ PingtestColumns.TABLE_NAME), values, whereClause,
+					whereArgs);
+		}
 
-		return affected;
-	} 
+		return ids.size();
+	}
 }

@@ -45,7 +45,7 @@ public class PingService extends Service {
 	private static int TIME_REPEAT_PING = 60 * 1000;
 	private static int LOCATION_UPDATE_MIN_TIME = 5 * 1000;
 	private static int LOCATION_UPDATE_MIN_DISTANCE = 10;
-	private static String SERVER_ADDRESS = "jia.bit.edu.cn";
+	private static String SERVER_ADDRESS = "www.baidu.com";
 
 	@Override
 	public IBinder onBind(Intent intent) {

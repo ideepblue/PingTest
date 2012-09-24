@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
 	private TextView textViewPing;
 	private TextView textViewPause;
 
-//	private AlarmManager alarmManager;
+	// private AlarmManager alarmManager;
 	private LocationManager locationManager;
 	private TelephonyManager telephonyManager;
 
@@ -44,16 +44,17 @@ public class MainActivity extends Activity {
 
 	private PingRecevier pingReceiver;
 
-//	private CellInfo cellInfo;
+	// private CellInfo cellInfo;
 
 	private DatabaseOperator dbo;
 
 	private int pingHistroyCount;
 
-//	private static int TIME_REPEAT_PING = 60 * 1000;
+	// private static int TIME_REPEAT_PING = 60 * 1000;
 	private static int LOCATION_UPDATE_MIN_TIME = 5 * 1000;
 	private static int LOCATION_UPDATE_MIN_DISTANCE = 10;
-//	private static String SERVER_ADDRESS = "jia.bit.edu.cn";
+
+	// private static String SERVER_ADDRESS = "jia.bit.edu.cn";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -87,19 +88,21 @@ public class MainActivity extends Activity {
 			if (serviceList.get(i).service.getClassName().equals(
 					"com.pingtest.PingService") == true) {
 				textViewPing.setText(this.getString(R.string.service_running));
-				textViewPing.setTextColor(this.getResources().getColor(R.color.text_blue));
+				textViewPing.setTextColor(this.getResources().getColor(
+						R.color.text_blue));
 				isRunning = true;
 			}
 		}
 		if (!isRunning) {
 			textViewPing.setText(this.getString(R.string.service_stopped));
-			textViewPing.setTextColor(this.getResources().getColor(R.color.text_red));
+			textViewPing.setTextColor(this.getResources().getColor(
+					R.color.text_red));
 		}
 
 		// PingHistoryCount
 		pingHistroyCount = dbo.queryCount();
 		Log.v("PingHistoryCount", pingHistroyCount + "");
-		
+
 		// START
 		MainActivity.this.start();
 		super.onResume();
@@ -113,8 +116,8 @@ public class MainActivity extends Activity {
 	}
 
 	private void initManager() {
-//		alarmManager = (AlarmManager) this
-//				.getSystemService(Context.ALARM_SERVICE);
+		// alarmManager = (AlarmManager) this
+		// .getSystemService(Context.ALARM_SERVICE);
 		telephonyManager = (TelephonyManager) this
 				.getSystemService(Context.TELEPHONY_SERVICE);
 		locationManager = (LocationManager) this
@@ -271,7 +274,8 @@ public class MainActivity extends Activity {
 						PingService.class));
 				textViewPing.setText(MainActivity.this
 						.getString(R.string.service_running));
-				textViewPing.setTextColor(MainActivity.this.getResources().getColor(R.color.text_blue));
+				textViewPing.setTextColor(MainActivity.this.getResources()
+						.getColor(R.color.text_blue));
 				// MainActivity.this.start();
 			}
 		});
@@ -287,7 +291,8 @@ public class MainActivity extends Activity {
 						PingService.class));
 				textViewPing.setText(MainActivity.this
 						.getString(R.string.service_stopped));
-				textViewPing.setTextColor(MainActivity.this.getResources().getColor(R.color.text_red));
+				textViewPing.setTextColor(MainActivity.this.getResources()
+						.getColor(R.color.text_red));
 				// MainActivity.this.stop();
 			}
 		});
@@ -333,12 +338,12 @@ public class MainActivity extends Activity {
 		PendingIntent pendingIntent;
 
 		// 开启 Ping 定时器
-//		intent = new Intent(PingtestActions.ACTION_PING);
-//		pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
-//				intent, 0);
-//		alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-//				SystemClock.elapsedRealtime() + 2000, TIME_REPEAT_PING,
-//				pendingIntent);
+		// intent = new Intent(PingtestActions.ACTION_PING);
+		// pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
+		// intent, 0);
+		// alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+		// SystemClock.elapsedRealtime() + 2000, TIME_REPEAT_PING,
+		// pendingIntent);
 
 		// 打开AGPS监听
 		intent = new Intent(PingtestActions.ACTION_AGPS_UPDATE);
@@ -369,11 +374,11 @@ public class MainActivity extends Activity {
 		PendingIntent pendingIntent;
 
 		// 关闭 Ping 定时器
-		
-//		intent = new Intent(PingtestActions.ACTION_PING);
-//		pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
-//				intent, 0);
-//		alarmManager.cancel(pendingIntent);
+
+		// intent = new Intent(PingtestActions.ACTION_PING);
+		// pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0,
+		// intent, 0);
+		// alarmManager.cancel(pendingIntent);
 
 		// 关闭AGPS监听
 		intent = new Intent(PingtestActions.ACTION_AGPS_UPDATE);
@@ -392,105 +397,105 @@ public class MainActivity extends Activity {
 				PhoneStateListener.LISTEN_NONE);
 	}
 
-//	private class PingAsyncTask extends AsyncTask<Void, Void, Void> {
-//
-//		String strResult;
-//		int result;
-//		String cellInfoLock;
-//		String pingInfoLock;
-//
-//		protected void onPreExecute() {
-//			cellInfoLock = cellInfo.toString();
-//			try {
-//				cellInfo.put("timestamp", System.currentTimeMillis());
-//			} catch (JSONException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//
-//		protected Void doInBackground(Void... params) {
-//
-//			Runtime run = Runtime.getRuntime();
-//			Process proc = null;
-//			try {
-//				String str = "ping -c 10 -i 1 -W 1 " + SERVER_ADDRESS;
-//				System.out.println(str);
-//				proc = run.exec(str);
-//				InputStreamReader ir = new InputStreamReader(
-//						proc.getInputStream());
-//				LineNumberReader input = new LineNumberReader(ir);
-//				String line;
-//				strResult = new String();
-//
-//				boolean startRecord = false;
-//				while ((line = input.readLine()) != null) {
-//					if (startRecord) {
-//						strResult += line + "\n";
-//					}
-//					if (line.startsWith("---")) {
-//						startRecord = true;
-//					}
-//				}
-//
-//				result = proc.waitFor();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			} finally { // proc.destroy();
-//
-//			}
-//			return null;
-//		}
-//
-//		protected void onPostExecute(Void params) {
-//			try {
-//				if (result == 0) {
-//					// 10 packets transmitted, 10 received, 0% packet loss, time
-//					// 9008ms
-//					// rtt min/avg/max/mdev = 49.082/58.336/63.711/4.395 ms
-//
-//					Log.v("Ping", "ok");
-//					Log.v("Ping", strResult);
-//
-//					cellInfo.put("result", "ok");
-//
-//					String[] lines = strResult.split("\n");
-//					String[] line1 = lines[0].split(", ");
-//					cellInfo.put("packetsTransmitted", line1[0].split(" ")[0]);
-//					cellInfo.put("packetsReceived", line1[1].split(" ")[0]);
-//					cellInfo.put("packetLoss", line1[2].split(" ")[0]);
-//					cellInfo.put("pingTime", line1[3].split(" ")[1]);
-//
-//					String[] line2 = lines[1].substring(23,
-//							lines[1].length() - 2).split("/");
-//
-//					cellInfo.put("min", line2[0]);
-//					cellInfo.put("avg", line2[1]);
-//					cellInfo.put("max", line2[2]);
-//					cellInfo.put("mdev", line2[3]);
-//
-//				} else {
-//					Log.v("Ping", "failed");
-//					cellInfo.put("result", "failed");
-//				}
-//
-//				textViewPing.setText(strResult);
-//
-//				Iterator iterator = cellInfo.keys();
-//				while (iterator.hasNext()) {
-//					String key = (String) iterator.next();
-//
-//					Log.i("R", key + " = " + cellInfo.getString(key));
-//				}
-//				Log.i("R", cellInfoLock);
-//
-//			} catch (JSONException e) {
-//				e.printStackTrace();
-//			}
-//
-//		}
-//	}
+	// private class PingAsyncTask extends AsyncTask<Void, Void, Void> {
+	//
+	// String strResult;
+	// int result;
+	// String cellInfoLock;
+	// String pingInfoLock;
+	//
+	// protected void onPreExecute() {
+	// cellInfoLock = cellInfo.toString();
+	// try {
+	// cellInfo.put("timestamp", System.currentTimeMillis());
+	// } catch (JSONException e) {
+	// e.printStackTrace();
+	// }
+	// }
+	//
+	// protected Void doInBackground(Void... params) {
+	//
+	// Runtime run = Runtime.getRuntime();
+	// Process proc = null;
+	// try {
+	// String str = "ping -c 10 -i 1 -W 1 " + SERVER_ADDRESS;
+	// System.out.println(str);
+	// proc = run.exec(str);
+	// InputStreamReader ir = new InputStreamReader(
+	// proc.getInputStream());
+	// LineNumberReader input = new LineNumberReader(ir);
+	// String line;
+	// strResult = new String();
+	//
+	// boolean startRecord = false;
+	// while ((line = input.readLine()) != null) {
+	// if (startRecord) {
+	// strResult += line + "\n";
+	// }
+	// if (line.startsWith("---")) {
+	// startRecord = true;
+	// }
+	// }
+	//
+	// result = proc.waitFor();
+	// } catch (IOException e) {
+	// e.printStackTrace();
+	// } catch (InterruptedException e) {
+	// e.printStackTrace();
+	// } finally { // proc.destroy();
+	//
+	// }
+	// return null;
+	// }
+	//
+	// protected void onPostExecute(Void params) {
+	// try {
+	// if (result == 0) {
+	// // 10 packets transmitted, 10 received, 0% packet loss, time
+	// // 9008ms
+	// // rtt min/avg/max/mdev = 49.082/58.336/63.711/4.395 ms
+	//
+	// Log.v("Ping", "ok");
+	// Log.v("Ping", strResult);
+	//
+	// cellInfo.put("result", "ok");
+	//
+	// String[] lines = strResult.split("\n");
+	// String[] line1 = lines[0].split(", ");
+	// cellInfo.put("packetsTransmitted", line1[0].split(" ")[0]);
+	// cellInfo.put("packetsReceived", line1[1].split(" ")[0]);
+	// cellInfo.put("packetLoss", line1[2].split(" ")[0]);
+	// cellInfo.put("pingTime", line1[3].split(" ")[1]);
+	//
+	// String[] line2 = lines[1].substring(23,
+	// lines[1].length() - 2).split("/");
+	//
+	// cellInfo.put("min", line2[0]);
+	// cellInfo.put("avg", line2[1]);
+	// cellInfo.put("max", line2[2]);
+	// cellInfo.put("mdev", line2[3]);
+	//
+	// } else {
+	// Log.v("Ping", "failed");
+	// cellInfo.put("result", "failed");
+	// }
+	//
+	// textViewPing.setText(strResult);
+	//
+	// Iterator iterator = cellInfo.keys();
+	// while (iterator.hasNext()) {
+	// String key = (String) iterator.next();
+	//
+	// Log.i("R", key + " = " + cellInfo.getString(key));
+	// }
+	// Log.i("R", cellInfoLock);
+	//
+	// } catch (JSONException e) {
+	// e.printStackTrace();
+	// }
+	//
+	// }
+	// }
 
 	private class PingRecevier extends BroadcastReceiver {
 
@@ -529,8 +534,7 @@ public class MainActivity extends Activity {
 							+ "\nLongitude = "
 							+ df7.format(location.getLongitude())
 							+ "\nAccuracy = "
-							+ df0.format(location.getAccuracy())
-							+ "\nT "
+							+ df0.format(location.getAccuracy()) + "\nT "
 							+ (calendar.getTime().getYear() + 1900) + "-"
 							+ (calendar.getTime().getMonth() + 1) + "-"
 							+ calendar.getTime().getDate() + " "
@@ -552,8 +556,7 @@ public class MainActivity extends Activity {
 							+ "\nLongitude = "
 							+ df7.format(location.getLongitude())
 							+ "\nAccuracy = "
-							+ df0.format(location.getAccuracy())
-							+ "\nT "
+							+ df0.format(location.getAccuracy()) + "\nT "
 							+ (calendar.getTime().getYear() + 1900) + "-"
 							+ (calendar.getTime().getMonth() + 1) + "-"
 							+ calendar.getTime().getDate() + " "
