@@ -98,7 +98,7 @@ public class PingReceiver extends BroadcastReceiver {
 						str += key + "=" + cellInfos.get(i).get(key).toString()
 								+ "\t";
 					}
-					str = str.substring(0, str.length() - 2) + "\n";
+					str = str.substring(0, str.length() - 1) + "\n";
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
