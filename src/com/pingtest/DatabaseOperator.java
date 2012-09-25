@@ -1,7 +1,8 @@
 package com.pingtest;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.json.JSONException;
@@ -50,25 +51,14 @@ public class DatabaseOperator {
 		values.put(PingtestColumns.DATA, cellInfo.toString());
 
 		try {
-			Calendar calendar = Calendar.getInstance();
-			calendar.setTimeInMillis(cellInfo.getLong("agpsTimestamp"));
 
 			values.put(PingtestColumns.AGPS_TIME,
-					(calendar.getTime().getYear() + 1900) + "-"
-							+ (calendar.getTime().getMonth() + 1) + "-"
-							+ calendar.getTime().getDate() + " "
-							+ calendar.getTime().getHours() + ":"
-							+ calendar.getTime().getMinutes() + ":"
-							+ calendar.getTime().getSeconds());
-
-			calendar.setTimeInMillis(cellInfo.getLong("gpsTimestamp"));
+					new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(cellInfo.getLong("agpsTimestamp"))));
 			values.put(PingtestColumns.GPS_TIME,
-					(calendar.getTime().getYear() + 1900) + "-"
-							+ (calendar.getTime().getMonth() + 1) + "-"
-							+ calendar.getTime().getDate() + " "
-							+ calendar.getTime().getHours() + ":"
-							+ calendar.getTime().getMinutes() + ":"
-							+ calendar.getTime().getSeconds());
+					new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(cellInfo.getLong("gpsTimestamp"))));
+			values.put(PingtestColumns.F_TIME,
+					new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(cellInfo.getLong("timestamp"))));
+			
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -127,6 +117,41 @@ public class DatabaseOperator {
 				CellInfo value = new CellInfo(cur.getString(cur
 						.getColumnIndex(PingtestColumns.DATA)));
 				value.id = cur.getLong(cur.getColumnIndex(PingtestColumns._ID));
+				value.status = cur.getString(cur.getColumnIndex(PingtestColumns.STATUS));
+				value.agpsTimestamp = cur.getString(cur.getColumnIndex(PingtestColumns.AGPS_TIME));
+				value.gpsTimestamp = cur.getString(cur.getColumnIndex(PingtestColumns.GPS_TIME));
+				value.fTimestamp = cur.getString(cur.getColumnIndex(PingtestColumns.F_TIME));
+				result.add(value);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		cur.close();
+
+		return result;
+	}
+	
+	public List<CellInfo> queryAll() {
+		Cursor cur;
+		String whereClause = null;
+		String[] whereArgs = null;
+
+		cur = resolver.query(
+				Uri.parse(DatabaseProvider.CONTENT_URI
+						+ PingtestColumns.TABLE_NAME), null, whereClause,
+				whereArgs, null);
+
+		List<CellInfo> result = new ArrayList<CellInfo>();
+
+		while (cur.moveToNext()) {
+			try {
+				CellInfo value = new CellInfo(cur.getString(cur
+						.getColumnIndex(PingtestColumns.DATA)));
+				value.id = cur.getLong(cur.getColumnIndex(PingtestColumns._ID));
+				value.status = cur.getString(cur.getColumnIndex(PingtestColumns.STATUS));
+				value.agpsTimestamp = cur.getString(cur.getColumnIndex(PingtestColumns.AGPS_TIME));
+				value.gpsTimestamp = cur.getString(cur.getColumnIndex(PingtestColumns.GPS_TIME));
+				value.fTimestamp = cur.getString(cur.getColumnIndex(PingtestColumns.F_TIME));
 				result.add(value);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -156,5 +181,18 @@ public class DatabaseOperator {
 		}
 
 		return ids.size();
+	}
+	
+	public int deleteOK() {
+		String whereClause = PingtestColumns.STATUS + " = ?";
+		String[] whereArgs = new String[]{ CellInfo.OK };
+		
+		int affected = resolver.delete(
+				Uri.parse(DatabaseProvider.CONTENT_URI + PingtestColumns.TABLE_NAME), 
+				whereClause, 
+				whereArgs
+				);
+		
+		return affected;
 	}
 }

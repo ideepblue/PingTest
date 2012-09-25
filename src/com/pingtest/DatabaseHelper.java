@@ -15,6 +15,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		+ PingtestColumns.STATUS + " text, "
 		+ PingtestColumns.AGPS_TIME + " text, "
 		+ PingtestColumns.GPS_TIME + " text, "
+		+ PingtestColumns.F_TIME + " text, "
 		+ PingtestColumns.DATA + " text "
 		+ ");"
 	};

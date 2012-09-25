@@ -84,6 +84,19 @@
         android:text="@string/ping"
         android:textColor="@android:color/white"
         tools:context=".MainActivity" />
+    
+    <TextView
+        android:id="@+id/table"
+        android:layout_width="80dp"
+        android:layout_height="50dp"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/end"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/background_dark"
+        android:gravity="center"
+        android:text="@string/ping"
+        android:textColor="@android:color/white"
+        tools:context=".MainActivity" />
 
     <TextView
         android:id="@+id/ping"
@@ -100,7 +113,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_below="@id/end"
+        android:layout_below="@id/table"
         android:layout_marginTop="10dp"
         android:text="@string/hello_world"
         tools:context=".MainActivity" />

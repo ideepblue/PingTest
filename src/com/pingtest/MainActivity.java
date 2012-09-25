@@ -27,6 +27,7 @@ public class MainActivity extends Activity {
 
 	private TextView textViewStart;
 	private TextView textViewEnd;
+	private TextView textViewTable;
 	private TextView textViewSignalStrengths;
 	private TextView textViewPhoneType;
 	private TextView textViewServiceState;
@@ -294,6 +295,17 @@ public class MainActivity extends Activity {
 				textViewPing.setTextColor(MainActivity.this.getResources()
 						.getColor(R.color.text_red));
 				// MainActivity.this.stop();
+			}
+		});
+		
+		textViewTable = (TextView) findViewById(R.id.table);
+		textViewTable.setText("Clean \"OK\"");
+		textViewTable.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+//				MainActivity.this.startActivity(new Intent(MainActivity.this, TableActivity.class));
+				Toast.makeText(MainActivity.this, "Delete " + dbo.deleteOK() + " row(s).",
+						Toast.LENGTH_SHORT).show();
 			}
 		});
 

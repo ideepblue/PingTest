@@ -9,5 +9,6 @@ public class PingtestColumns implements BaseColumns {
 	
 	public static final String AGPS_TIME = "agps_time";
 	public static final String GPS_TIME = "gps_time";
+	public static final String F_TIME = "f_time";
 	public static final String DATA = "data";
 }

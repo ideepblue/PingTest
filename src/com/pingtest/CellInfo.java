@@ -8,6 +8,11 @@ public class CellInfo extends JSONObject {
 	public static String FAILED = "failed";
 	
 	public long id;
+	public String status;
+	public String agpsTimestamp;
+	public String gpsTimestamp;
+	public String fTimestamp;
+	
 	public CellInfo() {
 		super();
 		

@@ -88,10 +88,7 @@ public class PingReceiver extends BroadcastReceiver {
 				try {
 					ids.add(cellInfos.get(i).id);
 
-					Calendar calendar = Calendar.getInstance();
-					calendar.setTimeInMillis(cellInfos.get(i).getLong(
-							"timestamp"));
-					cellInfos.get(i).put("formatTimestamp", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(calendar.getTime()));
+					cellInfos.get(i).put("formatTimestamp", cellInfos.get(i).fTimestamp);
 					
 					Iterator iterator = cellInfos.get(i).keys();
 					while (iterator.hasNext()) {
